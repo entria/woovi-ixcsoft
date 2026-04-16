@@ -1,0 +1,8 @@
+export const BULL_MQ_JOBS = {
+  IXCSOFT: {
+    CRON: {
+      POLL_OPEN_INVOICES: 'IXCSOFT.CRON.POLL_OPEN_INVOICES',
+    },
+    PROCESS_INVOICE: 'IXCSOFT.PROCESS_INVOICE',
+  },
+} as const;
