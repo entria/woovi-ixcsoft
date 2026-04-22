@@ -1,3 +1,29 @@
+import dotenvSafe from 'dotenv-safe';
+import path from 'path';
+
+import { APP_ENVIRONMENT_ENUM } from './AppEnvironmentEnum.ts';
+
+const cwd = process.cwd();
+
+const getEnvFile = (): string => {
+  if (process.env.ENV_FILE !== undefined) {
+    return process.env.ENV_FILE;
+  }
+  return '.env';
+};
+
+const envFile = getEnvFile();
+
+dotenvSafe.config({
+  path: path.join(cwd, envFile),
+  sample: path.join(cwd, '.env.example'),
+  allowEmptyValues: true,
+});
+
+if (process.env.APP_ENV === APP_ENVIRONMENT_ENUM.DEVELOPMENT) {
+  console.log('.env: ', path.join(cwd, envFile));
+}
+
 export const config = {
   APP_ENV: process.env.APP_ENV ?? 'development',
   PORT: process.env.PORT ?? '7777',
@@ -12,7 +38,6 @@ export const config = {
 
   // Woovi
   WOOVI_APP_ID: process.env.WOOVI_APP_ID ?? '',
-  WOOVI_WEBHOOK_SECRET: process.env.WOOVI_WEBHOOK_SECRET ?? '',
   WOOVI_API_URL: process.env.WOOVI_API_URL ?? 'https://api.woovi.com.br',
 
   // Config

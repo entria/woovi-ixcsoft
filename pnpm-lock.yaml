@@ -26,6 +26,9 @@ importers:
       bullmq:
         specifier: ^5.57.0
         version: 5.76.0
+      dotenv-safe:
+        specifier: ^9.1.0
+        version: 9.1.0(dotenv@17.4.2)
       elastic-apm-node:
         specifier: ^4.13.0
         version: 4.15.0
@@ -54,6 +57,9 @@ importers:
         specifier: ^3.22.0
         version: 3.25.76
     devDependencies:
+      '@types/dotenv-safe':
+        specifier: ^9.1.0
+        version: 9.1.0(dotenv@17.4.2)
       '@types/koa':
         specifier: ^2.15.0
         version: 2.15.0
@@ -912,6 +918,11 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
+  '@types/dotenv-safe@9.1.0':
+    resolution: {integrity: sha512-cL9PCogrlu+uDtq3M9qvAs+G5rfHwx+untcZGzA3fX8++NVdg9f01zdA175h55TstsEFRogXMUObo6QDduc/5w==}
+    peerDependencies:
+      dotenv: '>=8.2.0'
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -1257,6 +1268,15 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
+
+  dotenv-safe@9.1.0:
+    resolution: {integrity: sha512-2qwVAnUN+EDpu41pIK1XiJpHXKHV9Dnti3cE1EnUXT1/BV5+B7xuSZtgZ/4LExkCpp5F6BGikraezQL+8hKCOA==}
+    peerDependencies:
+      dotenv: '>= 8.2.0'
+
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -2878,6 +2898,11 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
+  '@types/dotenv-safe@9.1.0(dotenv@17.4.2)':
+    dependencies:
+      '@types/node': 24.12.2
+      dotenv: 17.4.2
+
   '@types/estree@1.0.8': {}
 
   '@types/express-serve-static-core@5.1.1':
@@ -3272,6 +3297,12 @@ snapshots:
 
   detect-libc@2.1.2:
     optional: true
+
+  dotenv-safe@9.1.0(dotenv@17.4.2):
+    dependencies:
+      dotenv: 17.4.2
+
+  dotenv@17.4.2: {}
 
   dunder-proto@1.0.1:
     dependencies:

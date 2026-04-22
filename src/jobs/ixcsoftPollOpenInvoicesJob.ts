@@ -8,7 +8,7 @@ import { BULL_MQ_JOBS } from './bullMqJobs.ts';
  * Orchestrator cron job.
  * Fetches all active IXCSOFT applications and enqueues one polling job per application.
  */
-export const ixcsoftPollOpenInvoicesJob = async (): Promise<void> => {
+export const ixcsoftPollOpenInvoicesJob = async (_data: unknown): Promise<void> => {
   logger.info('ixcsoft poll open invoices cron started');
 
   const applications = await ApplicationModel.find({
