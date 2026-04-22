@@ -1,31 +1,28 @@
 import { fetch } from 'undici';
 
-import { config } from '../common/config.ts';
+import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
 import logger from '../common/logger.ts';
-
-const getAuthHeader = (): string => {
-  const encoded = Buffer.from(config.IXCSOFT_TOKEN).toString('base64');
-  return `Basic ${encoded}`;
-};
 
 type IxcsoftRequestOptions = {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   path: string;
   body?: unknown;
   header?: 'listar' | 'Provedor';
+  credentials: IxcsoftCredentials;
 };
 
 export const ixcsoftRequest = async <T>(options: IxcsoftRequestOptions): Promise<T> => {
-  const { method, path, body, header = method === 'GET' ? 'listar' : 'Provedor' } = options;
+  const { method, path, body, header = method === 'GET' ? 'listar' : 'Provedor', credentials } = options;
 
-  const url = `${config.IXCSOFT_BASE_URL}${path}`;
+  const encoded = Buffer.from(credentials.token).toString('base64');
+  const url = `${credentials.baseUrl}${path}`;
 
   logger.info({ method, path }, 'ixcsoft request');
 
   const response = await fetch(url, {
     method,
     headers: {
-      Authorization: getAuthHeader(),
+      Authorization: `Basic ${encoded}`,
       ixcsoft: header,
       'Content-Type': 'application/json',
     },
