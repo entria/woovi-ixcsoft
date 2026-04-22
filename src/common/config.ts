@@ -1,6 +1,6 @@
 export const config = {
   APP_ENV: process.env.APP_ENV ?? 'development',
-  PORT: process.env.PORT ?? '3000',
+  PORT: process.env.PORT ?? '7777',
   REDIS_HOST: process.env.REDIS_HOST ?? 'redis://localhost:6379',
 
   // IXC Soft
