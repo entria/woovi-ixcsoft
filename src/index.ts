@@ -11,7 +11,17 @@ process.title = 'service-ixcsoft';
 const PORT = config.PORT;
 
 (async () => {
-  logger.info({ APP_ENV: config.APP_ENV }, 'starting service-ixcsoft');
+  logger.info(
+    {
+      APP_ENV: config.APP_ENV,
+      PORT: config.PORT,
+      REDIS_HOST: config.REDIS_HOST,
+      IXCSOFT_BASE_URL: config.IXCSOFT_BASE_URL,
+      WOOVI_API_URL: config.WOOVI_API_URL,
+      POLL_INTERVAL_CRON: config.POLL_INTERVAL_CRON,
+    },
+    'starting service-ixcsoft',
+  );
 
   const server = createServer(serviceApp.callback());
 
