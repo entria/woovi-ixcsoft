@@ -1,12 +1,10 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
-import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftSuccessResponse } from './ixcsoftTypes.ts';
+import logger from '../common/logger.ts';
 
 type UpdateInvoicePixOptions = {
   invoiceId: string;
   correlationID: string;
-  credentials: IxcsoftCredentials;
 };
 
 /**
@@ -18,14 +16,13 @@ type UpdateInvoicePixOptions = {
 export const ixcsoftUpdateInvoicePix = async (
   options: UpdateInvoicePixOptions,
 ): Promise<void> => {
-  const { invoiceId, correlationID, credentials } = options;
+  const { invoiceId, correlationID } = options;
 
   logger.info({ invoiceId, correlationID }, 'ixcsoft linking invoice to woovi charge');
 
   await ixcsoftRequest<IxcsoftSuccessResponse>({
     method: 'PUT',
     path: `/fn_areceber/${invoiceId}`,
-    credentials,
     body: {
       pix_txid: correlationID,
       tipo_recebimento: 'Pix',

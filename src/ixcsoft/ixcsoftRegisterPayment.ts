@@ -1,22 +1,13 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
-import { config } from '../common/config.ts';
-import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftSuccessResponse } from './ixcsoftTypes.ts';
+import { config } from '../common/config.ts';
+import logger from '../common/logger.ts';
 
 type RegisterPaymentOptions = {
   invoiceId: string;
   valueCents: number;
   paidAt?: Date;
-  credentials?: IxcsoftCredentials;
 };
-
-const getDefaultCredentials = (): IxcsoftCredentials => ({
-  baseUrl: config.IXCSOFT_BASE_URL,
-  token: config.IXCSOFT_TOKEN,
-  filialId: config.IXCSOFT_FILIAL_ID,
-  contaId: config.IXCSOFT_CONTA_ID,
-});
 
 const formatDate = (date: Date): string => {
   const dd = String(date.getDate()).padStart(2, '0');
@@ -35,7 +26,7 @@ const centsToDecimal = (cents: number): string =>
 export const ixcsoftRegisterPayment = async (
   options: RegisterPaymentOptions,
 ): Promise<void> => {
-  const { invoiceId, valueCents, paidAt = new Date(), credentials = getDefaultCredentials() } = options;
+  const { invoiceId, valueCents, paidAt = new Date() } = options;
 
   const valueDecimal = centsToDecimal(valueCents);
   const dateFormatted = formatDate(paidAt);
@@ -48,12 +39,11 @@ export const ixcsoftRegisterPayment = async (
   const result = await ixcsoftRequest<IxcsoftSuccessResponse>({
     method: 'POST',
     path: '/fn_areceber_recebimentos_baixas_novo',
-    credentials,
     body: {
-      filial_id: credentials.filialId,
+      filial_id: config.IXCSOFT_FILIAL_ID,
       id_receber: invoiceId,
-      conta_: credentials.contaId,
-      id_conta: credentials.contaId,
+      conta_: config.IXCSOFT_CONTA_ID,
+      id_conta: config.IXCSOFT_CONTA_ID,
       tipo_recebimento: 'Pix',
       data: dateFormatted,
       valor_parcela: valueDecimal,
