@@ -9,7 +9,7 @@ import logger from '../common/logger.ts';
  *  1. Creates a Woovi PIX charge
  *  2. Stores the correlationID in IXC's pix_txid field
  */
-export const ixcsoftPollOpenInvoicesJob = async (): Promise<void> => {
+export const ixcsoftPollOpenInvoicesJob = async (_data: unknown): Promise<void> => {
   logger.info('ixcsoft poll open invoices job started');
 
   const invoices = await ixcsoftListOpenInvoices({ rp: 200 });

@@ -1,10 +1,10 @@
 import Router from '@koa/router';
 
 import { statusGet } from './statusGet.ts';
-import { wooviWebhookHandler } from './webhook/wooviWebhookHandler.ts';
+import { chargeCompletedHandler } from './charges/chargeCompletedHandler.ts';
 
 export const serviceRouter = new Router();
 
 serviceRouter.get('/status', statusGet);
 
-serviceRouter.post('/service-ixcsoft/v1/webhooks/woovi/charge/completed', wooviWebhookHandler);
+serviceRouter.post('/service-ixcsoft/v1/charges/completed', chargeCompletedHandler);
