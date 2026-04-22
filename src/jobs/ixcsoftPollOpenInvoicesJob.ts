@@ -1,42 +1,29 @@
-import { ixcsoftListOpenInvoices } from '../ixcsoft/ixcsoftListOpenInvoices.ts';
-import { wooviCreateCharge } from '../woovi/wooviCreateCharge.ts';
-import { ixcsoftUpdateInvoicePix } from '../ixcsoft/ixcsoftUpdateInvoicePix.ts';
+import { ApplicationModel } from '../application/ApplicationModel.ts';
+import { APPLICATION_TYPE } from '../application/ApplicationType.ts';
 import logger from '../common/logger.ts';
+import { defaultJobOptions, ixcsoftQueue } from './queues.ts';
+import { BULL_MQ_JOBS } from './bullMqJobs.ts';
 
 /**
- * Polls IXC Soft for open invoices without a Woovi charge.
- * For each invoice:
- *  1. Creates a Woovi PIX charge
- *  2. Stores the correlationID in IXC's pix_txid field
+ * Orchestrator cron job.
+ * Fetches all active IXCSOFT applications and enqueues one polling job per application.
  */
 export const ixcsoftPollOpenInvoicesJob = async (): Promise<void> => {
-  logger.info('ixcsoft poll open invoices job started');
+  logger.info('ixcsoft poll open invoices cron started');
 
-  const invoices = await ixcsoftListOpenInvoices({ rp: 200 });
+  const applications = await ApplicationModel.find({
+    type: APPLICATION_TYPE.IXCSOFT,
+    isActive: true,
+    removedAt: null,
+  }).lean();
 
-  logger.info({ count: invoices.length }, 'ixcsoft invoices to process');
+  logger.info({ count: applications.length }, 'ixcsoft active applications found');
 
-  let success = 0;
-  let errors = 0;
-
-  for (const invoice of invoices) {
-    try {
-      const charge = await wooviCreateCharge(invoice);
-
-      await ixcsoftUpdateInvoicePix({
-        invoiceId: invoice.id,
-        correlationID: charge.correlationID,
-      });
-
-      success++;
-    } catch (err) {
-      logger.error(
-        { error: err, invoiceId: invoice.id },
-        'ixcsoft failed to process invoice',
-      );
-      errors++;
-    }
+  for (const application of applications) {
+    await ixcsoftQueue.add(
+      BULL_MQ_JOBS.IXCSOFT.POLL_INVOICES_FOR_APPLICATION,
+      { applicationId: application._id.toString() },
+      defaultJobOptions,
+    );
   }
-
-  logger.info({ success, errors }, 'ixcsoft poll open invoices job finished');
 };

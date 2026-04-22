@@ -2,6 +2,7 @@ import { createServer } from 'http';
 
 import { config } from './common/config.ts';
 import logger from './common/logger.ts';
+import { connectDatabase } from './database/connectDatabase.ts';
 import { serviceApp } from './serviceApp.ts';
 import { initializeWorkers } from './jobs/worker.ts';
 import { addCronJobs } from './jobs/crons/addCronJobs.ts';
@@ -11,7 +12,20 @@ process.title = 'service-ixcsoft';
 const PORT = config.PORT;
 
 (async () => {
-  logger.info({ APP_ENV: config.APP_ENV }, 'starting service-ixcsoft');
+  logger.info(
+    {
+      APP_ENV: config.APP_ENV,
+      PORT: config.PORT,
+      REDIS_HOST: config.REDIS_HOST,
+      MONGO_URI: config.MONGO_URI,
+      IXCSOFT_BASE_URL: config.IXCSOFT_BASE_URL,
+      WOOVI_API_URL: config.WOOVI_API_URL,
+      POLL_INTERVAL_CRON: config.POLL_INTERVAL_CRON,
+    },
+    'starting service-ixcsoft',
+  );
+
+  await connectDatabase();
 
   const server = createServer(serviceApp.callback());
 
