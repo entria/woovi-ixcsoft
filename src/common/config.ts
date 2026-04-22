@@ -11,7 +11,6 @@ export const config = {
 
   // Woovi
   WOOVI_APP_ID: process.env.WOOVI_APP_ID ?? '',
-  WOOVI_WEBHOOK_SECRET: process.env.WOOVI_WEBHOOK_SECRET ?? '',
   WOOVI_API_URL: process.env.WOOVI_API_URL ?? 'https://api.woovi.com.br',
 
   // Config
