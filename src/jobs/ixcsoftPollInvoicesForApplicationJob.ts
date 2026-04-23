@@ -33,7 +33,7 @@ export const ixcsoftPollInvoicesForApplicationJob = async (
 
   for (const invoice of invoices) {
     try {
-      const charge = await wooviCreateCharge(invoice);
+      const charge = await wooviCreateCharge({ invoice, appId: application.wooviAppId });
 
       await ixcsoftUpdateInvoicePix({
         invoiceId: invoice.id,

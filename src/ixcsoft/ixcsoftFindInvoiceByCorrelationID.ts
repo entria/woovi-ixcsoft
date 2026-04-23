@@ -1,24 +1,22 @@
 import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
-import { config } from '../common/config.ts';
 import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftInvoice, IxcsoftListResponse } from './ixcsoftTypes.ts';
 
-const getDefaultCredentials = (): IxcsoftCredentials => ({
-  baseUrl: config.IXCSOFT_BASE_URL,
-  token: config.IXCSOFT_TOKEN,
-  filialId: config.IXCSOFT_FILIAL_ID,
-  contaId: config.IXCSOFT_CONTA_ID,
-});
+type FindInvoiceOptions = {
+  correlationID: string;
+  credentials: IxcsoftCredentials;
+};
 
 /**
  * Finds an IXC invoice by the Woovi correlationID stored in the pix_txid field.
  * Used during webhook processing to identify which invoice to mark as paid.
  */
 export const ixcsoftFindInvoiceByCorrelationID = async (
-  correlationID: string,
-  credentials: IxcsoftCredentials = getDefaultCredentials(),
+  options: FindInvoiceOptions,
 ): Promise<IxcsoftInvoice | null> => {
+  const { correlationID, credentials } = options;
+
   logger.info({ correlationID }, 'ixcsoft looking up invoice by correlationID');
 
   const data = await ixcsoftRequest<IxcsoftListResponse<IxcsoftInvoice>>({

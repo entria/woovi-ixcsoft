@@ -30,15 +30,11 @@ export const config = {
   REDIS_HOST: process.env.REDIS_HOST ?? 'redis://localhost:6379',
   MONGO_URI: process.env.MONGO_URI ?? 'mongodb://localhost:27017/woovi',
 
-  // IXC Soft
-  IXCSOFT_BASE_URL: process.env.IXCSOFT_BASE_URL ?? '',
-  IXCSOFT_TOKEN: process.env.IXCSOFT_TOKEN ?? '', // format: "user_id:token"
-  IXCSOFT_FILIAL_ID: process.env.IXCSOFT_FILIAL_ID ?? '1',
-  IXCSOFT_CONTA_ID: process.env.IXCSOFT_CONTA_ID ?? '1',
-
   // Woovi
-  WOOVI_APP_ID: process.env.WOOVI_APP_ID ?? '',
   WOOVI_API_URL: process.env.WOOVI_API_URL ?? 'https://api.woovi.com.br',
+
+  // Public URL (used when registering webhooks on Woovi)
+  PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL ?? '',
 
   // Config
   POLL_INTERVAL_CRON: process.env.POLL_INTERVAL_CRON ?? '0 * * * *', // every hour

@@ -1,5 +1,4 @@
 import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
-import { config } from '../common/config.ts';
 import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftSuccessResponse } from './ixcsoftTypes.ts';
@@ -8,15 +7,8 @@ type RegisterPaymentOptions = {
   invoiceId: string;
   valueCents: number;
   paidAt?: Date;
-  credentials?: IxcsoftCredentials;
+  credentials: IxcsoftCredentials;
 };
-
-const getDefaultCredentials = (): IxcsoftCredentials => ({
-  baseUrl: config.IXCSOFT_BASE_URL,
-  token: config.IXCSOFT_TOKEN,
-  filialId: config.IXCSOFT_FILIAL_ID,
-  contaId: config.IXCSOFT_CONTA_ID,
-});
 
 const formatDate = (date: Date): string => {
   const dd = String(date.getDate()).padStart(2, '0');
@@ -35,7 +27,7 @@ const centsToDecimal = (cents: number): string =>
 export const ixcsoftRegisterPayment = async (
   options: RegisterPaymentOptions,
 ): Promise<void> => {
-  const { invoiceId, valueCents, paidAt = new Date(), credentials = getDefaultCredentials() } = options;
+  const { invoiceId, valueCents, paidAt = new Date(), credentials } = options;
 
   const valueDecimal = centsToDecimal(valueCents);
   const dateFormatted = formatDate(paidAt);

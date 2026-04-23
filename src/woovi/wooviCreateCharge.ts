@@ -11,11 +11,18 @@ const buildCorrelationID = (invoice: IxcsoftInvoice): string =>
 const centsFromDecimal = (decimal: string): number =>
   Math.round(parseFloat(decimal) * 100);
 
+type WooviCreateChargeOptions = {
+  invoice: IxcsoftInvoice;
+  appId: string;
+};
+
 /**
  * Creates a Woovi PIX charge for an IXC Soft invoice.
  * The correlationID follows the pattern `ixc-{invoice_id}` for easy lookup.
  */
-export const wooviCreateCharge = async (invoice: IxcsoftInvoice): Promise<WooviCharge> => {
+export const wooviCreateCharge = async (options: WooviCreateChargeOptions): Promise<WooviCharge> => {
+  const { invoice, appId } = options;
+
   const correlationID = buildCorrelationID(invoice);
   const valueCents = centsFromDecimal(invoice.valor_aberto || invoice.valor);
 
@@ -31,6 +38,7 @@ export const wooviCreateCharge = async (invoice: IxcsoftInvoice): Promise<WooviC
   const response = await wooviRequest<{ charge: WooviCharge }>({
     method: 'POST',
     path: '/charge',
+    appId,
     body: input,
   });
 

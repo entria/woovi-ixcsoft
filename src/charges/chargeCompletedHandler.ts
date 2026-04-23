@@ -6,7 +6,17 @@ import type { ProcessChargeJobData } from '../jobs/ixcsoftProcessChargeJob.ts';
 import logger from '../common/logger.ts';
 
 export const chargeCompletedHandler = async (ctx: Context): Promise<void> => {
-  const { correlationID, value, paidAt } = ctx.request.body as ProcessChargeJobData;
+  const { applicationId } = ctx.params as { applicationId: string };
+  const { correlationID, value, paidAt } = (ctx.request.body ?? {}) as Omit<
+    ProcessChargeJobData,
+    'applicationId'
+  >;
+
+  if (!applicationId) {
+    ctx.status = 400;
+    ctx.body = { error: 'missing applicationId' };
+    return;
+  }
 
   if (!correlationID) {
     ctx.status = 400;
@@ -16,11 +26,11 @@ export const chargeCompletedHandler = async (ctx: Context): Promise<void> => {
 
   await ixcsoftQueue.add(
     BULL_MQ_JOBS.IXCSOFT.PROCESS_INVOICE,
-    { correlationID, value, paidAt } satisfies ProcessChargeJobData,
+    { applicationId, correlationID, value, paidAt } satisfies ProcessChargeJobData,
     defaultJobOptions,
   );
 
-  logger.info({ correlationID }, 'charge completed: job enqueued');
+  logger.info({ applicationId, correlationID }, 'charge completed: job enqueued');
 
   ctx.status = 200;
   ctx.body = { ok: true };
