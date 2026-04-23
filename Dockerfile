@@ -5,7 +5,9 @@ RUN npm i -g corepack@latest && corepack enable pnpm && corepack install -g pnpm
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY package.json pnpm-lock.yaml ./
+COPY ./docker/woovi-ixcsoft/package.json /usr/src/app/
+COPY ./docker/woovi-ixcsoft/pnpm-lock.yaml /usr/src/app/
+COPY ./docker/woovi-ixcsoft/.npmrc /usr/src/app/
 
 ENV NODE_ENV=production
 ENV PORT=3000
