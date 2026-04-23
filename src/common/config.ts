@@ -32,6 +32,9 @@ export const config = {
 
   // Woovi
   WOOVI_API_URL: process.env.WOOVI_API_URL ?? 'https://api.woovi.com.br',
+  WOOVI_WEBHOOK_PUBLIC_KEY: process.env.WOOVI_WEBHOOK_PUBLIC_KEY
+    ? Buffer.from(process.env.WOOVI_WEBHOOK_PUBLIC_KEY, 'base64').toString('utf8')
+    : '',
 
   // Public URL (used when registering webhooks on Woovi)
   PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL ?? '',
