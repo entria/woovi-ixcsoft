@@ -9,7 +9,13 @@
     "build": "node esbuild.config.js",
     "lint": "eslint src",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "docker:build:local": "bash docker/build-local.sh",
+    "docker:build:staging": "bash docker/build-docker-staging.sh",
+    "docker:build:production": "bash docker/build-docker-production.sh",
+    "docker:build:k8s": "bash docker/build-docker-k8s.sh",
+    "docker:run": "bash docker/run.sh",
+    "docker:update-locks": "bash docker/update-docker-locks.sh"
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
