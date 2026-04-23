@@ -1,19 +1,12 @@
-import { config } from '../common/config.ts';
-import type { IApplication } from './ApplicationModel.ts';
+import type { IApplication, IxcsoftConfig } from './ApplicationModel.ts';
 
-export type IxcsoftCredentials = {
-  baseUrl: string;
-  token: string;
-  filialId: string;
-  contaId: string;
-};
+export type IxcsoftCredentials = IxcsoftConfig;
 
-// TODO: implement credential loading based on chosen approach
-export const getApplicationIxcsoftCredentials = (_application: IApplication): IxcsoftCredentials => {
+export const getApplicationIxcsoftCredentials = (application: IApplication): IxcsoftCredentials => {
   return {
-    baseUrl: config.IXCSOFT_BASE_URL,
-    token: config.IXCSOFT_TOKEN,
-    filialId: config.IXCSOFT_FILIAL_ID,
-    contaId: config.IXCSOFT_CONTA_ID,
+    baseUrl: application.ixcsoft.baseUrl,
+    token: application.ixcsoft.token,
+    filialId: application.ixcsoft.filialId,
+    contaId: application.ixcsoft.contaId,
   };
 };
