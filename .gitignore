@@ -4,3 +4,4 @@ build/
 .env
 *.local
 *.tsbuildinfo
+woovi-agents
