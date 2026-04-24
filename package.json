@@ -24,7 +24,6 @@
     "@woovi/apiwithlog": "^2.8.0",
     "@woovi/logger": "^1.0.1",
     "bullmq": "^5.57.0",
-    "dotenv-safe": "^9.1.0",
     "elastic-apm-node": "^4.13.0",
     "ioredis": "^5.7.0",
     "koa": "^3.0.1",
@@ -36,7 +35,6 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@types/dotenv-safe": "^9.1.0",
     "@types/koa": "^2.15.0",
     "@types/koa-bodyparser": "~5.0.2",
     "@types/koa__cors": "^5.0.0",
