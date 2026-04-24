@@ -9,18 +9,66 @@ IXC Soft is used by thousands of Brazilian internet providers (ISPs). This servi
 ## How it works
 
 ```
-IXC Soft (ERP)                  Microservice                    Woovi
-──────────────                  ────────────                    ──────
-Open invoices (fn_areceber) ──► Poll every hour            
-                                Create PIX charge ──────────► POST /charge
-                                Store correlationID ────────► pix_txid field in IXC
-                                                              (paid by customer)
-                                Receive webhook ◄───────────  charge:completed
-                                Do baixa ───────────────────► POST /fn_areceber_recebimentos_baixas_novo
-                                                              Invoice marked as paid ✓
+IXC Soft (ERP)              Microservice (per-tenant)              Woovi
+──────────────              ─────────────────────────              ──────
+                            ┌─ ApplicationModel ──────────┐
+                            │  wooviAppId + ixcsoft creds │
+                            └─────────────────────────────┘
+                                        │
+Open invoices (fn_areceber) ──► Poll (cron, per tenant)
+                                Create PIX charge ──────────────► POST /charge
+                                Store correlationID ────────────► pix_txid field in IXC
+                                                                  (paid by customer)
+                                Receive signed webhook ◄──────── charge:completed
+                                Verify x-webhook-signature
+                                Do baixa ─────────────────────► POST /fn_areceber_recebimentos_baixas_novo
+                                                                  Invoice marked as paid ✓
 ```
 
-**No database required on the MVP.** The Woovi `correlationID` is stored directly in IXC's `pix_txid` field, making the system stateless and idempotent.
+**Multi-tenant by design.** Each ISP is an `ApplicationModel` document in MongoDB, carrying its own Woovi appId and IXC credentials. Charge-completed webhooks from Woovi are validated against the Woovi public key before being processed.
+
+---
+
+## Tenant registration
+
+```http
+POST /service-ixcsoft/v1/applications
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "wooviAppId": "Q2xpZW50X0lkXzE6Q2xpZW50X1NlY3JldF8x",
+  "ixcsoft": {
+    "baseUrl": "https://demo.ixcsoft.com.br/webservice/v1",
+    "token": "102:c46...",
+    "filialId": "1",
+    "contaId": "1"
+  }
+}
+```
+
+The service:
+1. Calls Woovi to register an `OPENPIX:CHARGE_COMPLETED` webhook pointing at `{PUBLIC_BASE_URL}/service-ixcsoft/v1/webhooks/charges/completed/:applicationId`.
+2. Only persists the application if the webhook registration succeeds (no orphan records).
+
+**Responses:**
+- `201 Created` — `{ applicationId, webhookId }`
+- `400 Bad Request` — missing fields
+- `409 Conflict` — `wooviAppId` already registered
+
+---
+
+## Charge completed webhook
+
+```http
+POST /service-ixcsoft/v1/webhooks/charges/completed/:applicationId
+```
+
+Fired by Woovi when a charge is paid. Must include `x-webhook-signature` (RSA or ECDSA, `sha256`), signed with Woovi's private key. The raw body is verified against `WOOVI_WEBHOOK_PUBLIC_KEY` (base64-encoded PEM) — requests with missing or invalid signatures return `401`.
+
+Signed test pings (`{ evento: "teste_webhook" }`) that Woovi sends when registering the webhook are acknowledged with `200` without further processing.
 
 ---
 
@@ -220,19 +268,19 @@ Useful fields: `razao`, `cnpj_cpf`, `email`, `telefone_celular`, `whatsapp`.
 
 ```http
 POST https://api.woovi.com.br/api/v1/charge
-Authorization: Appid {woovi_appid}
+Authorization: {woovi_appid}
 ```
 
 ```json
 {
-  "correlationID": "ixc-{invoice_id}-{timestamp}",
+  "correlationID": "ixc-{invoice_id}",
   "value": 10000,
-  "comment": "Fatura #{invoice_id} - {customer_name}",
+  "comment": "Fatura #{invoice_id}",
   "expiresIn": 86400
 }
 ```
 
-Use `ixc-{invoice_id}` as the correlationID prefix for easy lookup on webhook receipt.
+The `correlationID` follows the pattern `ixc-{invoice_id}` for easy lookup on webhook receipt.
 
 ### Webhook payload (`charge:completed`)
 
@@ -240,7 +288,7 @@ Use `ixc-{invoice_id}` as the correlationID prefix for easy lookup on webhook re
 {
   "event": "OPENPIX:CHARGE_COMPLETED",
   "charge": {
-    "correlationID": "ixc-145723-...",
+    "correlationID": "ixc-145723",
     "value": 12333,
     "status": "COMPLETED"
   }
@@ -248,71 +296,79 @@ Use `ixc-{invoice_id}` as the correlationID prefix for easy lookup on webhook re
 ```
 
 On receipt:
-1. Extract `invoice_id` from `correlationID`
-2. Call `POST /fn_areceber_recebimentos_baixas_novo`
+1. Verify the `x-webhook-signature` header against `WOOVI_WEBHOOK_PUBLIC_KEY`
+2. Load the tenant's `ApplicationModel` using the `applicationId` in the URL path
+3. Look up the IXC invoice by `correlationID` (stored in `pix_txid`)
+4. Call `POST /fn_areceber_recebimentos_baixas_novo` with the tenant's IXC credentials
 
 ---
 
 ## Environment variables
 
 ```env
-# IXC Soft
-IXC_BASE_URL=https://your-domain.ixcsoft.com.br/webservice/v1
-IXC_TOKEN=102:c460359...          # user_id:token
-IXC_FILIAL_ID=1
-IXC_CONTA_ID=1
+APP_ENV=development
+PORT=7777
+REDIS_HOST=redis://localhost:6379
+MONGO_URI=mongodb://localhost:27017/woovi-ixcsoft
 
 # Woovi
-WOOVI_APP_ID=your-app-id
-WOOVI_WEBHOOK_SECRET=your-secret
+WOOVI_API_URL=https://api.woovi.com.br
+# Base64-encoded PEM of Woovi's webhook public key (cat public-key.pem | base64 -w 0)
+WOOVI_WEBHOOK_PUBLIC_KEY=
 
-# Config
-POLL_INTERVAL_MINUTES=60
+# Public URL (used to register webhooks on Woovi per tenant)
+PUBLIC_BASE_URL=https://service-ixcsoft.example.com
+
+# Cron schedule (default: every hour)
+POLL_INTERVAL_CRON=0 * * * *
 ```
+
+Per-tenant IXC credentials (`baseUrl`, `token`, `filialId`, `contaId`) and `wooviAppId` are sent on the `POST /service-ixcsoft/v1/applications` body — not via env.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Microservice                      │
-│                                                      │
-│  ┌──────────┐    ┌──────────────┐   ┌────────────┐  │
-│  │  Cron    │───►│ IXC Poller   │──►│Woovi Client│  │
-│  │ (hourly) │    │ fn_areceber  │   │ /charge    │  │
-│  └──────────┘    └──────────────┘   └────────────┘  │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐   │
-│  │  Webhook Handler (/webhook/woovi)             │   │
-│  │  charge:completed → baixa em fn_areceber      │   │
-│  └──────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────┘
-         │                          │
-         ▼                          ▼
-   IXC Soft API              Woovi API
+┌──────────────────────────────────────────────────────────────────┐
+│                       service-ixcsoft (Koa)                       │
+│                                                                    │
+│  POST /applications ──► registers tenant, creates Woovi webhook   │
+│  POST /webhooks/charges/completed/:id ──► signature-checked       │
+│                                                                    │
+│  ┌─────────────┐   ┌───────────────────────┐   ┌──────────────┐  │
+│  │ Cron        │──►│ Poll invoices per     │──►│ Woovi client │  │
+│  │ (BullMQ)    │   │ ApplicationModel      │   │ (per-tenant) │  │
+│  └─────────────┘   └───────────────────────┘   └──────────────┘  │
+│                                                                    │
+│  ┌───────────────────────────────────────────────────────────┐   │
+│  │ Charge process job: resolves credentials from Mongo,       │   │
+│  │ does baixa in the tenant's IXC                              │   │
+│  └───────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────┘
+       │            │                  │
+       ▼            ▼                  ▼
+   MongoDB       Redis             IXC Soft / Woovi
+  (tenants)    (BullMQ)                APIs
 ```
 
 ### Multi-tenant
 
-Each ISP configures their own credentials. The microservice can support multiple ISPs by storing per-tenant config:
+Each ISP is an `ApplicationModel` document with:
 
-```
-tenants/
-  isp-abc/
-    IXC_BASE_URL
-    IXC_TOKEN
-    WOOVI_APP_ID
-  isp-xyz/
-    ...
-```
+- `type`: `IXCSOFT`
+- `wooviAppId`: the Woovi Bearer token used when calling the Woovi API for this tenant
+- `ixcsoft`: `{ baseUrl, token, filialId, contaId }`
+- `isActive`, `removedAt`: activation/soft-delete flags
+
+A new tenant is onboarded by calling `POST /service-ixcsoft/v1/applications`. Polling iterates all active applications and dispatches one BullMQ job per tenant. The charge-completed webhook carries the `applicationId` in the URL so the process job always resolves the right tenant's IXC credentials.
 
 ---
 
 ## Limitations & known issues
 
 - **IP whitelist required:** Production IXC instances restrict API access by IP. Each ISP must whitelist the microservice's outbound IP.
-- **No IXC outbound webhooks:** IXC does not push events when new invoices are created. The microservice polls periodically (recommended: every 60 minutes).
+- **No IXC outbound webhooks:** IXC does not push events when new invoices are created. The microservice polls periodically (default: every 60 minutes, configurable via `POLL_INTERVAL_CRON`).
 - **Date format:** The baixa endpoint requires `dd/mm/yyyy`. ISO 8601 is not accepted.
 - **`fn_areceber_altera` broken:** The `PUT /fn_areceber_altera/{id}` endpoint returns HTTP 500. Use `PUT /fn_areceber/{id}` instead.
 - **Closed fiscal period in demo:** The sandbox demo has its financial period closed at 31/12/2015. Baixa operations register but do not change invoice `status` to `R`. This is a demo limitation only.
