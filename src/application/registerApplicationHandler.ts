@@ -5,6 +5,7 @@ import { ApplicationModel, type IxcsoftConfig } from './ApplicationModel.ts';
 import { APPLICATION_TYPE } from './ApplicationType.ts';
 import { config } from '../common/config.ts';
 import logger from '../common/logger.ts';
+import { ixcsoftPing } from '../ixcsoft/ixcsoftPing.ts';
 import {
   WOOVI_WEBHOOK_EVENT,
   wooviCreateWebhook,
@@ -23,6 +24,20 @@ const validateBody = (body: RegisterApplicationBody): string | null => {
   return null;
 };
 
+const validateBaseUrlFormat = (raw: string): string | null => {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return 'ixcsoft.baseUrl is not a valid URL';
+  }
+  if (url.protocol !== 'https:') return 'ixcsoft.baseUrl must use https';
+  if (!url.pathname.includes('/webservice/v1')) {
+    return 'ixcsoft.baseUrl must include /webservice/v1';
+  }
+  return null;
+};
+
 export const registerApplicationHandler = async (ctx: Context): Promise<void> => {
   const body = (ctx.request.body ?? {}) as RegisterApplicationBody;
 
@@ -30,6 +45,13 @@ export const registerApplicationHandler = async (ctx: Context): Promise<void> =>
   if (validationError) {
     ctx.status = 400;
     ctx.body = { error: validationError };
+    return;
+  }
+
+  const baseUrlError = validateBaseUrlFormat(body.ixcsoft!.baseUrl!);
+  if (baseUrlError) {
+    ctx.status = 400;
+    ctx.body = { error: baseUrlError };
     return;
   }
 
@@ -47,6 +69,14 @@ export const registerApplicationHandler = async (ctx: Context): Promise<void> =>
   if (existing) {
     ctx.status = 409;
     ctx.body = { error: 'application already registered', applicationId: existing._id.toString() };
+    return;
+  }
+
+  const ping = await ixcsoftPing(ixcsoft);
+  if (!ping.ok) {
+    logger.warn({ baseUrl: ixcsoft.baseUrl, error: ping.error }, 'ixcsoft ping failed');
+    ctx.status = 400;
+    ctx.body = { error: `ixcsoft validation failed: ${ping.error}` };
     return;
   }
 

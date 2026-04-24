@@ -13,6 +13,10 @@ vi.mock('../../woovi/wooviCreateWebhook.ts', () => ({
   wooviCreateWebhook: vi.fn(),
 }));
 
+vi.mock('../../ixcsoft/ixcsoftPing.ts', () => ({
+  ixcsoftPing: vi.fn(),
+}));
+
 vi.mock('../../common/config.ts', () => ({
   config: { PUBLIC_BASE_URL: 'https://public.example.com' },
 }));
@@ -24,6 +28,7 @@ vi.mock('../../common/logger.ts', () => {
 
 import { ApplicationModel } from '../ApplicationModel.ts';
 import { config } from '../../common/config.ts';
+import { ixcsoftPing } from '../../ixcsoft/ixcsoftPing.ts';
 import { wooviCreateWebhook } from '../../woovi/wooviCreateWebhook.ts';
 import { registerApplicationHandler } from '../registerApplicationHandler.ts';
 
@@ -42,7 +47,7 @@ const runHandler = async (body?: unknown): Promise<MockCtx> => {
 const validBody = () => ({
   wooviAppId: 'app_123',
   ixcsoft: {
-    baseUrl: 'https://provedor.example.com',
+    baseUrl: 'https://ixc.example.com/webservice/v1',
     token: 'tok_abc',
   },
 });
@@ -50,11 +55,13 @@ const validBody = () => ({
 const findOneMock = ApplicationModel.findOne as unknown as ReturnType<typeof vi.fn>;
 const createMock = ApplicationModel.create as unknown as ReturnType<typeof vi.fn>;
 const webhookMock = wooviCreateWebhook as unknown as ReturnType<typeof vi.fn>;
+const pingMock = ixcsoftPing as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
   findOneMock.mockResolvedValue(null);
   createMock.mockResolvedValue(undefined);
+  pingMock.mockResolvedValue({ ok: true });
   webhookMock.mockResolvedValue({
     id: 'wh_1',
     name: 'service-ixcsoft charge completed',
@@ -111,9 +118,43 @@ it('POST /service-ixcsoft/v1/applications returns 400 when ixcsoft.token is miss
   expect(ctx.body).toEqual({ error: 'missing ixcsoft.token' });
 });
 
+it('POST /service-ixcsoft/v1/applications returns 400 when baseUrl is not a valid URL', async () => {
+  const body = validBody();
+  body.ixcsoft.baseUrl = 'ixc.example.com';
+  const ctx = await runHandler(body);
+  expect(ctx.status).toBe(400);
+  expect(ctx.body).toEqual({ error: 'ixcsoft.baseUrl is not a valid URL' });
+});
+
+it('POST /service-ixcsoft/v1/applications returns 400 when baseUrl uses http instead of https', async () => {
+  const body = validBody();
+  body.ixcsoft.baseUrl = 'http://ixc.example.com/webservice/v1';
+  const ctx = await runHandler(body);
+  expect(ctx.status).toBe(400);
+  expect(ctx.body).toEqual({ error: 'ixcsoft.baseUrl must use https' });
+});
+
+it('POST /service-ixcsoft/v1/applications returns 400 when baseUrl does not include /webservice/v1', async () => {
+  const body = validBody();
+  body.ixcsoft.baseUrl = 'https://ixc.example.com';
+  const ctx = await runHandler(body);
+  expect(ctx.status).toBe(400);
+  expect(ctx.body).toEqual({ error: 'ixcsoft.baseUrl must include /webservice/v1' });
+});
+
+it('POST /service-ixcsoft/v1/applications returns 400 when ixcsoftPing fails (unreachable, bad token, IP blocked)', async () => {
+  pingMock.mockResolvedValue({ ok: false, error: 'IXC Soft request failed: 401' });
+  const ctx = await runHandler(validBody());
+  expect(ctx.status).toBe(400);
+  expect(ctx.body).toEqual({ error: 'ixcsoft validation failed: IXC Soft request failed: 401' });
+  expect(webhookMock).not.toHaveBeenCalled();
+  expect(createMock).not.toHaveBeenCalled();
+});
+
 it('POST /service-ixcsoft/v1/applications short-circuits before touching DB or Woovi when validation fails', async () => {
   await runHandler({});
   expect(findOneMock).not.toHaveBeenCalled();
+  expect(pingMock).not.toHaveBeenCalled();
   expect(webhookMock).not.toHaveBeenCalled();
   expect(createMock).not.toHaveBeenCalled();
 });
@@ -141,6 +182,7 @@ it('POST /service-ixcsoft/v1/applications returns 409 when wooviAppId is already
     applicationId: '60f000000000000000000001',
   });
   expect(findOneMock).toHaveBeenCalledWith({ wooviAppId: 'app_123' });
+  expect(pingMock).not.toHaveBeenCalled();
   expect(webhookMock).not.toHaveBeenCalled();
   expect(createMock).not.toHaveBeenCalled();
 });
@@ -154,6 +196,10 @@ it('POST /service-ixcsoft/v1/applications creates the application and registers 
   expect(resBody.applicationId).toMatch(/^[a-f0-9]{24}$/);
 
   expect(findOneMock).toHaveBeenCalledWith({ wooviAppId: 'app_123' });
+  expect(pingMock).toHaveBeenCalledWith({
+    baseUrl: 'https://ixc.example.com/webservice/v1',
+    token: 'tok_abc',
+  });
   expect(webhookMock).toHaveBeenCalledTimes(1);
   expect(createMock).toHaveBeenCalledTimes(1);
 });
@@ -200,7 +246,7 @@ it('POST /service-ixcsoft/v1/applications persists IXCSoft config, marks the app
   expect(createArg.isActive).toBe(true);
   expect(createArg.wooviAppId).toBe('app_123');
   expect(createArg.ixcsoft).toEqual({
-    baseUrl: 'https://provedor.example.com',
+    baseUrl: 'https://ixc.example.com/webservice/v1',
     token: 'tok_abc',
   });
   expect(createArg._id.toString()).toBe(resBody.applicationId);
