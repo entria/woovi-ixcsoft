@@ -1,31 +1,31 @@
 import type { Context } from 'koa';
 import { beforeEach, expect, it, vi } from 'vitest';
 
-vi.mock('./ApplicationModel.ts', () => ({
+vi.mock('../ApplicationModel.ts', () => ({
   ApplicationModel: {
     findOne: vi.fn(),
     create: vi.fn(),
   },
 }));
 
-vi.mock('../woovi/wooviCreateWebhook.ts', () => ({
+vi.mock('../../woovi/wooviCreateWebhook.ts', () => ({
   WOOVI_WEBHOOK_EVENT: { CHARGE_COMPLETED: 'OPENPIX:CHARGE_COMPLETED' },
   wooviCreateWebhook: vi.fn(),
 }));
 
-vi.mock('../common/config.ts', () => ({
+vi.mock('../../common/config.ts', () => ({
   config: { PUBLIC_BASE_URL: 'https://public.example.com' },
 }));
 
-vi.mock('../common/logger.ts', () => {
+vi.mock('../../common/logger.ts', () => {
   const stub = { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() };
   return { default: stub, logger: stub };
 });
 
-import { ApplicationModel } from './ApplicationModel.ts';
-import { config } from '../common/config.ts';
-import { wooviCreateWebhook } from '../woovi/wooviCreateWebhook.ts';
-import { registerApplicationHandler } from './registerApplicationHandler.ts';
+import { ApplicationModel } from '../ApplicationModel.ts';
+import { config } from '../../common/config.ts';
+import { wooviCreateWebhook } from '../../woovi/wooviCreateWebhook.ts';
+import { registerApplicationHandler } from '../registerApplicationHandler.ts';
 
 type MockCtx = {
   request: { body?: unknown };
