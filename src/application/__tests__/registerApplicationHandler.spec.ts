@@ -44,8 +44,6 @@ const validBody = () => ({
   ixcsoft: {
     baseUrl: 'https://provedor.example.com',
     token: 'tok_abc',
-    filialId: '1',
-    contaId: '2',
   },
 });
 
@@ -111,22 +109,6 @@ it('POST /service-ixcsoft/v1/applications returns 400 when ixcsoft.token is miss
   const ctx = await runHandler(body);
   expect(ctx.status).toBe(400);
   expect(ctx.body).toEqual({ error: 'missing ixcsoft.token' });
-});
-
-it('POST /service-ixcsoft/v1/applications returns 400 when ixcsoft.filialId is missing', async () => {
-  const body = validBody();
-  body.ixcsoft.filialId = '';
-  const ctx = await runHandler(body);
-  expect(ctx.status).toBe(400);
-  expect(ctx.body).toEqual({ error: 'missing ixcsoft.filialId' });
-});
-
-it('POST /service-ixcsoft/v1/applications returns 400 when ixcsoft.contaId is missing', async () => {
-  const body = validBody();
-  body.ixcsoft.contaId = '';
-  const ctx = await runHandler(body);
-  expect(ctx.status).toBe(400);
-  expect(ctx.body).toEqual({ error: 'missing ixcsoft.contaId' });
 });
 
 it('POST /service-ixcsoft/v1/applications short-circuits before touching DB or Woovi when validation fails', async () => {
@@ -220,8 +202,6 @@ it('POST /service-ixcsoft/v1/applications persists IXCSoft config, marks the app
   expect(createArg.ixcsoft).toEqual({
     baseUrl: 'https://provedor.example.com',
     token: 'tok_abc',
-    filialId: '1',
-    contaId: '2',
   });
   expect(createArg._id.toString()).toBe(resBody.applicationId);
 });

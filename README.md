@@ -42,9 +42,7 @@ Content-Type: application/json
   "wooviAppId": "Q2xpZW50X0lkXzE6Q2xpZW50X1NlY3JldF8x",
   "ixcsoft": {
     "baseUrl": "https://demo.ixcsoft.com.br/webservice/v1",
-    "token": "102:c46...",
-    "filialId": "1",
-    "contaId": "1"
+    "token": "102:c46..."
   }
 }
 ```
@@ -323,7 +321,7 @@ PUBLIC_BASE_URL=https://service-ixcsoft.example.com
 POLL_INTERVAL_CRON=0 * * * *
 ```
 
-Per-tenant IXC credentials (`baseUrl`, `token`, `filialId`, `contaId`) and `wooviAppId` are sent on the `POST /service-ixcsoft/v1/applications` body — not via env.
+Per-tenant IXC credentials (`baseUrl`, `token`) and `wooviAppId` are sent on the `POST /service-ixcsoft/v1/applications` body — not via env. `filial_id` and `id_conta` come from each invoice directly at baixa time.
 
 ---
 
@@ -358,7 +356,7 @@ Each ISP is an `ApplicationModel` document with:
 
 - `type`: `IXCSOFT`
 - `wooviAppId`: the Woovi Bearer token used when calling the Woovi API for this tenant
-- `ixcsoft`: `{ baseUrl, token, filialId, contaId }`
+- `ixcsoft`: `{ baseUrl, token }`
 - `isActive`, `removedAt`: activation/soft-delete flags
 
 A new tenant is onboarded by calling `POST /service-ixcsoft/v1/applications`. Polling iterates all active applications and dispatches one BullMQ job per tenant. The charge-completed webhook carries the `applicationId` in the URL so the process job always resolves the right tenant's IXC credentials.
