@@ -3,8 +3,6 @@ import mongoose, { Schema, type Document, type Types } from 'mongoose';
 export type IxcsoftConfig = {
   baseUrl: string;
   token: string;
-  filialId: string;
-  contaId: string;
 };
 
 export type IApplication = {
@@ -22,8 +20,6 @@ const IxcsoftConfigSchema = new Schema<IxcsoftConfig>(
   {
     baseUrl: { type: String, required: true },
     token: { type: String, required: true },
-    filialId: { type: String, required: true },
-    contaId: { type: String, required: true },
   },
   { _id: false },
 );

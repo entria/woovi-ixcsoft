@@ -5,6 +5,8 @@ import type { IxcsoftSuccessResponse } from './ixcsoftTypes.ts';
 
 type RegisterPaymentOptions = {
   invoiceId: string;
+  filialId: string;
+  contaId: string;
   valueCents: number;
   paidAt?: Date;
   credentials: IxcsoftCredentials;
@@ -27,13 +29,13 @@ const centsToDecimal = (cents: number): string =>
 export const ixcsoftRegisterPayment = async (
   options: RegisterPaymentOptions,
 ): Promise<void> => {
-  const { invoiceId, valueCents, paidAt = new Date(), credentials } = options;
+  const { invoiceId, filialId, contaId, valueCents, paidAt = new Date(), credentials } = options;
 
   const valueDecimal = centsToDecimal(valueCents);
   const dateFormatted = formatDate(paidAt);
 
   logger.info(
-    { invoiceId, valueDecimal, dateFormatted },
+    { invoiceId, filialId, contaId, valueDecimal, dateFormatted },
     'ixcsoft registering payment (baixa)',
   );
 
@@ -42,10 +44,10 @@ export const ixcsoftRegisterPayment = async (
     path: '/fn_areceber_recebimentos_baixas_novo',
     credentials,
     body: {
-      filial_id: credentials.filialId,
+      filial_id: filialId,
       id_receber: invoiceId,
-      conta_: credentials.contaId,
-      id_conta: credentials.contaId,
+      conta_: contaId,
+      id_conta: contaId,
       tipo_recebimento: 'Pix',
       data: dateFormatted,
       valor_parcela: valueDecimal,

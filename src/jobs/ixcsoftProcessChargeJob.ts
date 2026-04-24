@@ -37,6 +37,8 @@ export const ixcsoftProcessChargeJob = async (data: unknown): Promise<void> => {
 
   await ixcsoftRegisterPayment({
     invoiceId: invoice.id,
+    filialId: invoice.filial_id,
+    contaId: invoice.id_conta,
     valueCents: value,
     paidAt: paidAt ? new Date(paidAt) : new Date(),
     credentials,

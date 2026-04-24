@@ -6,7 +6,5 @@ export const getApplicationIxcsoftCredentials = (application: IApplication): Ixc
   return {
     baseUrl: application.ixcsoft.baseUrl,
     token: application.ixcsoft.token,
-    filialId: application.ixcsoft.filialId,
-    contaId: application.ixcsoft.contaId,
   };
 };

@@ -20,8 +20,6 @@ const validateBody = (body: RegisterApplicationBody): string | null => {
   if (!body.ixcsoft) return 'missing ixcsoft';
   if (!body.ixcsoft.baseUrl) return 'missing ixcsoft.baseUrl';
   if (!body.ixcsoft.token) return 'missing ixcsoft.token';
-  if (!body.ixcsoft.filialId) return 'missing ixcsoft.filialId';
-  if (!body.ixcsoft.contaId) return 'missing ixcsoft.contaId';
   return null;
 };
 
