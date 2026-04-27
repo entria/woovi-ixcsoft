@@ -32,7 +32,7 @@ Open invoices (fn_areceber) ──► Poll (cron, per tenant)
 ## Tenant registration
 
 ```http
-POST /service-ixcsoft/v1/applications
+POST /api/v1/applications
 Content-Type: application/json
 ```
 
@@ -48,7 +48,7 @@ Content-Type: application/json
 ```
 
 The service:
-1. Calls Woovi to register an `OPENPIX:CHARGE_COMPLETED` webhook pointing at `{PUBLIC_BASE_URL}/service-ixcsoft/v1/webhooks/charges/completed/:applicationId`.
+1. Calls Woovi to register an `OPENPIX:CHARGE_COMPLETED` webhook pointing at `{PUBLIC_BASE_URL}/api/v1/webhooks/charges/completed/:applicationId`.
 2. Only persists the application if the webhook registration succeeds (no orphan records).
 
 **Responses:**
@@ -61,7 +61,7 @@ The service:
 ## Charge completed webhook
 
 ```http
-POST /service-ixcsoft/v1/webhooks/charges/completed/:applicationId
+POST /api/v1/webhooks/charges/completed/:applicationId
 ```
 
 Fired by Woovi when a charge is paid. Must include `x-webhook-signature` (RSA or ECDSA, `sha256`), signed with Woovi's private key. The raw body is verified against `WOOVI_WEBHOOK_PUBLIC_KEY` (base64-encoded PEM) — requests with missing or invalid signatures return `401`.
@@ -320,7 +320,7 @@ PUBLIC_BASE_URL=https://service-ixcsoft.example.com
 POLL_INTERVAL_CRON=0 * * * *
 ```
 
-Per-tenant IXC credentials (`baseUrl`, `token`) and `wooviAppId` are sent on the `POST /service-ixcsoft/v1/applications` body — not via env. `filial_id` and `id_conta` come from each invoice directly at baixa time.
+Per-tenant IXC credentials (`baseUrl`, `token`) and `wooviAppId` are sent on the `POST /api/v1/applications` body — not via env. `filial_id` and `id_conta` come from each invoice directly at baixa time.
 
 ---
 
@@ -335,7 +335,7 @@ pnpm test         # vitest run
 pnpm typecheck    # tsc --noEmit
 ```
 
-`instrumentation.ts` is the Next.js boot hook: it connects Mongo, starts the BullMQ workers, and registers the cron. Route handlers live under `src/app/service-ixcsoft/v1/`.
+`instrumentation.ts` is the Next.js boot hook: it connects Mongo, starts the BullMQ workers, and registers the cron. Route handlers live under `src/app/api/v1/`.
 
 ---
 
@@ -373,7 +373,7 @@ Each ISP is an `ApplicationModel` document with:
 - `ixcsoft`: `{ baseUrl, token }`
 - `isActive`, `removedAt`: activation/soft-delete flags
 
-A new tenant is onboarded by calling `POST /service-ixcsoft/v1/applications`. Polling iterates all active applications and dispatches one BullMQ job per tenant. The charge-completed webhook carries the `applicationId` in the URL so the process job always resolves the right tenant's IXC credentials.
+A new tenant is onboarded by calling `POST /api/v1/applications`. Polling iterates all active applications and dispatches one BullMQ job per tenant. The charge-completed webhook carries the `applicationId` in the URL so the process job always resolves the right tenant's IXC credentials.
 
 ---
 

@@ -80,7 +80,7 @@ export const registerApplication = async (input: { body: unknown }): Promise<Han
   const applicationObjectId = new Types.ObjectId();
   const applicationId = applicationObjectId.toString();
 
-  const webhookUrl = `${config.PUBLIC_BASE_URL.replace(/\/$/, '')}/service-ixcsoft/v1/webhooks/charges/completed/${applicationId}`;
+  const webhookUrl = `${config.PUBLIC_BASE_URL.replace(/\/$/, '')}/api/v1/webhooks/charges/completed/${applicationId}`;
 
   const webhook = await wooviCreateWebhook({
     appId: wooviAppId,
