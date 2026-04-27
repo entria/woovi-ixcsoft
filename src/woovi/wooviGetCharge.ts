@@ -1,4 +1,4 @@
-import { wooviRequest } from './wooviClient.ts';
+import { wooviRequest, WooviRequestError } from './wooviClient.ts';
 import type { WooviCharge } from './wooviTypes.ts';
 
 type GetChargeOptions = {
@@ -6,8 +6,17 @@ type GetChargeOptions = {
   correlationID: string;
 };
 
+// Woovi returns 400 with `{"error":"Cobrança não encontrada"}` for unknown charges,
+// not 404. Match on that to distinguish "not found" from real failures (auth, etc.).
+const isNotFoundError = (err: unknown): boolean => {
+  if (!(err instanceof WooviRequestError)) return false;
+  if (err.status === 404) return true;
+  if (err.status === 400 && /n[aã]o encontrada|not found/i.test(err.body)) return true;
+  return false;
+};
+
 /**
- * Fetches a Woovi charge by correlationID. Returns null on 404.
+ * Fetches a Woovi charge by correlationID. Returns null when not found.
  */
 export const wooviGetCharge = async (
   options: GetChargeOptions,
@@ -22,7 +31,7 @@ export const wooviGetCharge = async (
     });
     return response.charge ?? null;
   } catch (err) {
-    if (err instanceof Error && /404/.test(err.message)) return null;
+    if (isNotFoundError(err)) return null;
     throw err;
   }
 };
