@@ -305,7 +305,6 @@ On receipt:
 
 ```env
 APP_ENV=development
-PORT=7777
 REDIS_HOST=redis://localhost:6379
 MONGO_URI=mongodb://localhost:27017/woovi-ixcsoft
 

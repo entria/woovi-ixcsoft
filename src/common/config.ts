@@ -1,6 +1,5 @@
 export const config = {
   APP_ENV: process.env.APP_ENV ?? 'development',
-  PORT: process.env.PORT ?? '7777',
   REDIS_HOST: process.env.REDIS_HOST ?? 'redis://localhost:6379',
   MONGO_URI: process.env.MONGO_URI ?? 'mongodb://localhost:27017/woovi',
 
