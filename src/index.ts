@@ -5,7 +5,7 @@ import logger from './common/logger.ts';
 import { connectDatabase } from './database/connectDatabase.ts';
 import { serviceApp } from './serviceApp.ts';
 import { initializeWorkers } from './jobs/worker.ts';
-import { addCronJobs } from './jobs/crons/addCronJobs.ts';
+import { scheduleIxcPollOpenInvoices } from './jobs/crons/scheduleIxcPollOpenInvoices.ts';
 
 process.title = 'service-ixcsoft';
 
@@ -30,7 +30,7 @@ const PORT = config.PORT;
   const server = createServer(serviceApp.callback());
 
   initializeWorkers();
-  await addCronJobs();
+  await scheduleIxcPollOpenInvoices();
 
   server.listen(PORT, () => {
     logger.info(`server started on port :${PORT}`);
