@@ -1,4 +1,3 @@
-import type { Context } from 'koa';
 import { Types } from 'mongoose';
 
 import { ApplicationModel, type IxcsoftConfig } from './ApplicationModel.ts';
@@ -14,6 +13,11 @@ import {
 type RegisterApplicationBody = {
   wooviAppId?: string;
   ixcsoft?: Partial<IxcsoftConfig>;
+};
+
+export type HandlerResult = {
+  status: number;
+  body: unknown;
 };
 
 const validateBody = (body: RegisterApplicationBody): string | null => {
@@ -38,28 +42,22 @@ const validateBaseUrlFormat = (raw: string): string | null => {
   return null;
 };
 
-export const registerApplicationHandler = async (ctx: Context): Promise<void> => {
-  const body = (ctx.request.body ?? {}) as RegisterApplicationBody;
+export const registerApplication = async (input: { body: unknown }): Promise<HandlerResult> => {
+  const body = (input.body ?? {}) as RegisterApplicationBody;
 
   const validationError = validateBody(body);
   if (validationError) {
-    ctx.status = 400;
-    ctx.body = { error: validationError };
-    return;
+    return { status: 400, body: { error: validationError } };
   }
 
   const baseUrlError = validateBaseUrlFormat(body.ixcsoft!.baseUrl!);
   if (baseUrlError) {
-    ctx.status = 400;
-    ctx.body = { error: baseUrlError };
-    return;
+    return { status: 400, body: { error: baseUrlError } };
   }
 
   if (!config.PUBLIC_BASE_URL) {
     logger.error('PUBLIC_BASE_URL is not configured');
-    ctx.status = 500;
-    ctx.body = { error: 'server misconfigured: PUBLIC_BASE_URL missing' };
-    return;
+    return { status: 500, body: { error: 'server misconfigured: PUBLIC_BASE_URL missing' } };
   }
 
   const wooviAppId = body.wooviAppId as string;
@@ -67,17 +65,16 @@ export const registerApplicationHandler = async (ctx: Context): Promise<void> =>
 
   const existing = await ApplicationModel.findOne({ wooviAppId });
   if (existing) {
-    ctx.status = 409;
-    ctx.body = { error: 'application already registered', applicationId: existing._id.toString() };
-    return;
+    return {
+      status: 409,
+      body: { error: 'application already registered', applicationId: existing._id.toString() },
+    };
   }
 
   const ping = await ixcsoftPing(ixcsoft);
   if (!ping.ok) {
     logger.warn({ baseUrl: ixcsoft.baseUrl, error: ping.error }, 'ixcsoft ping failed');
-    ctx.status = 400;
-    ctx.body = { error: `ixcsoft validation failed: ${ping.error}` };
-    return;
+    return { status: 400, body: { error: `ixcsoft validation failed: ${ping.error}` } };
   }
 
   const applicationObjectId = new Types.ObjectId();
@@ -100,14 +97,10 @@ export const registerApplicationHandler = async (ctx: Context): Promise<void> =>
     ixcsoft,
   });
 
-  logger.info(
-    { applicationId, webhookId: webhook.id },
-    'application registered',
-  );
+  logger.info({ applicationId, webhookId: webhook.id }, 'application registered');
 
-  ctx.status = 201;
-  ctx.body = {
-    applicationId,
-    webhookId: webhook.id,
+  return {
+    status: 201,
+    body: { applicationId, webhookId: webhook.id },
   };
 };

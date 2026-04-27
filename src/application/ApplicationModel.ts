@@ -35,4 +35,6 @@ const ApplicationSchema = new Schema<IApplication>(
   { timestamps: true, collection: 'applications' },
 );
 
-export const ApplicationModel = mongoose.model<IApplication>('Application', ApplicationSchema);
+export const ApplicationModel =
+  (mongoose.models.Application as mongoose.Model<IApplication> | undefined) ??
+  mongoose.model<IApplication>('Application', ApplicationSchema);
