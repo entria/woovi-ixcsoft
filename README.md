@@ -316,6 +316,9 @@ WOOVI_WEBHOOK_PUBLIC_KEY=
 # Public URL (used to register webhooks on Woovi per tenant)
 PUBLIC_BASE_URL=https://service-ixcsoft.example.com
 
+# Pre-fills the reconciliation home screen input
+DEFAULT_WOOVI_APP_ID=
+
 # Cron schedule (default: every hour)
 POLL_INTERVAL_CRON=0 * * * *
 ```
