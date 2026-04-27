@@ -35,7 +35,7 @@ export const ixcsoftPollInvoicesForApplicationJob = async (
       const charge = await wooviCreateCharge({ invoice, appId: application.wooviAppId });
 
       await ixcsoftUpdateInvoicePix({
-        invoiceId: invoice.id,
+        invoice,
         correlationID: charge.correlationID,
         credentials,
       });
