@@ -10,6 +10,13 @@ type WooviRequestOptions = {
   body?: unknown;
 };
 
+export class WooviRequestError extends Error {
+  constructor(public readonly status: number, public readonly body: string) {
+    super(`Woovi request failed: ${status}`);
+    this.name = 'WooviRequestError';
+  }
+}
+
 export const wooviRequest = async <T>(options: WooviRequestOptions): Promise<T> => {
   const { method, path, appId, body } = options;
 
@@ -33,7 +40,7 @@ export const wooviRequest = async <T>(options: WooviRequestOptions): Promise<T> 
       { status: response.status, body: text.slice(0, 500), path },
       'woovi request failed',
     );
-    throw new Error(`Woovi request failed: ${response.status}`);
+    throw new WooviRequestError(response.status, text);
   }
 
   try {

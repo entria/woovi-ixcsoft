@@ -12,6 +12,9 @@ export const config = {
   // Public URL (used when registering webhooks on Woovi)
   PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL ?? '',
 
+  // Pre-fills the home screen input so reconciliation links work without manual setup
+  DEFAULT_WOOVI_APP_ID: process.env.DEFAULT_WOOVI_APP_ID ?? '',
+
   // Config
   POLL_INTERVAL_CRON: process.env.POLL_INTERVAL_CRON ?? '0 * * * *', // every hour
 

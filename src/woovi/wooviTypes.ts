@@ -11,8 +11,21 @@ export type WooviCharge = {
   brCode?: string;
   qrCodeImage?: string;
   paymentLinkUrl?: string;
+  createdAt?: string;
   expiresAt?: string;
+  paidAt?: string;
   comment?: string;
+};
+
+export type WooviListChargesResponse = {
+  charges: WooviCharge[];
+  pageInfo?: {
+    skip: number;
+    limit: number;
+    totalCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  };
 };
 
 export type WooviCreateChargeInput = {
