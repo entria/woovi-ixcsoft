@@ -35,9 +35,12 @@ export const wooviCreateCharge = async (options: WooviCreateChargeOptions): Prom
 
   logger.info({ correlationID, valueCents, invoiceId: invoice.id }, 'woovi creating charge');
 
+  // `return_existing=true` makes the endpoint idempotent: when a charge with
+  // this correlationID already exists, Woovi returns it instead of 400-ing
+  // with "Já existe uma cobrança com este Correlação ID".
   const response = await wooviRequest<{ charge: WooviCharge }>({
     method: 'POST',
-    path: '/charge',
+    path: '/charge?return_existing=true',
     appId,
     body: input,
   });
