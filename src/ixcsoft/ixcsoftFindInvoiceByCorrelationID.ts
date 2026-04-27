@@ -1,11 +1,11 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
+import type { IxcsoftConfig } from '../application/ApplicationModel.ts';
 import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftInvoice, IxcsoftListResponse } from './ixcsoftTypes.ts';
 
 type FindInvoiceOptions = {
   correlationID: string;
-  credentials: IxcsoftCredentials;
+  credentials: IxcsoftConfig;
 };
 
 /**

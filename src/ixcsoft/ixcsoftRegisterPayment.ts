@@ -1,4 +1,4 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
+import type { IxcsoftConfig } from '../application/ApplicationModel.ts';
 import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftSuccessResponse } from './ixcsoftTypes.ts';
@@ -9,7 +9,7 @@ type RegisterPaymentOptions = {
   contaId: string;
   valueCents: number;
   paidAt?: Date;
-  credentials: IxcsoftCredentials;
+  credentials: IxcsoftConfig;
 };
 
 const formatDate = (date: Date): string => {

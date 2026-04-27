@@ -1,6 +1,6 @@
 import { fetch } from 'undici';
 
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
+import type { IxcsoftConfig } from '../application/ApplicationModel.ts';
 import logger from '../common/logger.ts';
 
 type IxcsoftRequestOptions = {
@@ -8,7 +8,7 @@ type IxcsoftRequestOptions = {
   path: string;
   body?: unknown;
   header?: 'listar' | 'Provedor';
-  credentials: IxcsoftCredentials;
+  credentials: IxcsoftConfig;
 };
 
 export const ixcsoftRequest = async <T>(options: IxcsoftRequestOptions): Promise<T> => {

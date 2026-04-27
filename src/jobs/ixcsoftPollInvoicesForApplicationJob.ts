@@ -1,5 +1,4 @@
 import { ApplicationModel } from '../application/ApplicationModel.ts';
-import { getApplicationIxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
 import { ixcsoftListOpenInvoices } from '../ixcsoft/ixcsoftListOpenInvoices.ts';
 import { ixcsoftUpdateInvoicePix } from '../ixcsoft/ixcsoftUpdateInvoicePix.ts';
 import { wooviCreateCharge } from '../woovi/wooviCreateCharge.ts';
@@ -23,7 +22,7 @@ export const ixcsoftPollInvoicesForApplicationJob = async (
 
   logger.info({ applicationId }, 'ixcsoft poll invoices for application started');
 
-  const credentials = getApplicationIxcsoftCredentials(application);
+  const credentials = application.ixcsoft;
   const invoices = await ixcsoftListOpenInvoices({ rp: 200, credentials });
 
   logger.info({ applicationId, count: invoices.length }, 'ixcsoft invoices to process');

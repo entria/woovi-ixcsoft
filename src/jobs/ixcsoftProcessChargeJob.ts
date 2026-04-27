@@ -1,5 +1,4 @@
 import { ApplicationModel } from '../application/ApplicationModel.ts';
-import { getApplicationIxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
 import { ixcsoftFindInvoiceByCorrelationID } from '../ixcsoft/ixcsoftFindInvoiceByCorrelationID.ts';
 import { ixcsoftRegisterPayment } from '../ixcsoft/ixcsoftRegisterPayment.ts';
 import logger from '../common/logger.ts';
@@ -21,7 +20,7 @@ export const ixcsoftProcessChargeJob = async (data: unknown): Promise<void> => {
     return;
   }
 
-  const credentials = getApplicationIxcsoftCredentials(application);
+  const credentials = application.ixcsoft;
 
   const invoice = await ixcsoftFindInvoiceByCorrelationID({ correlationID, credentials });
 

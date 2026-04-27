@@ -1,4 +1,4 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
+import type { IxcsoftConfig } from '../application/ApplicationModel.ts';
 import logger from '../common/logger.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 import type { IxcsoftInvoice, IxcsoftListResponse } from './ixcsoftTypes.ts';
@@ -6,7 +6,7 @@ import type { IxcsoftInvoice, IxcsoftListResponse } from './ixcsoftTypes.ts';
 type ListOpenInvoicesOptions = {
   page?: number;
   rp?: number;
-  credentials: IxcsoftCredentials;
+  credentials: IxcsoftConfig;
 };
 
 /**

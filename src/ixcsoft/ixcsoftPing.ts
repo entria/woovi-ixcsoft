@@ -1,4 +1,4 @@
-import type { IxcsoftCredentials } from '../application/getApplicationIxcsoftCredentials.ts';
+import type { IxcsoftConfig } from '../application/ApplicationModel.ts';
 import { ixcsoftRequest } from './ixcsoftClient.ts';
 
 export type IxcsoftPingResult = { ok: true } | { ok: false; error: string };
@@ -11,7 +11,7 @@ export type IxcsoftPingResult = { ok: true } | { ok: false; error: string };
  * install has exactly one empresa row, so this is the cheapest probe.
  */
 export const ixcsoftPing = async (
-  credentials: IxcsoftCredentials,
+  credentials: IxcsoftConfig,
 ): Promise<IxcsoftPingResult> => {
   try {
     await ixcsoftRequest({
