@@ -1,4 +1,3 @@
-import type { Context } from 'koa';
 import { beforeEach, expect, it, vi } from 'vitest';
 
 vi.mock('../ApplicationModel.ts', () => ({
@@ -30,18 +29,10 @@ import { ApplicationModel } from '../ApplicationModel.ts';
 import { config } from '../../common/config.ts';
 import { ixcsoftPing } from '../../ixcsoft/ixcsoftPing.ts';
 import { wooviCreateWebhook } from '../../woovi/wooviCreateWebhook.ts';
-import { registerApplicationHandler } from '../registerApplicationHandler.ts';
+import { registerApplication } from '../registerApplicationHandler.ts';
 
-type MockCtx = {
-  request: { body?: unknown };
-  status?: number;
-  body?: unknown;
-};
-
-const runHandler = async (body?: unknown): Promise<MockCtx> => {
-  const ctx: MockCtx = { request: { body } };
-  await registerApplicationHandler(ctx as unknown as Context);
-  return ctx;
+const runHandler = async (body?: unknown) => {
+  return registerApplication({ body });
 };
 
 const validBody = () => ({

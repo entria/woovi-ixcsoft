@@ -1,19 +1,24 @@
-import type { Context } from 'koa';
-
 import { ixcsoftQueue, defaultJobOptions } from '../jobs/queues.ts';
 import { BULL_MQ_JOBS } from '../jobs/bullMqJobs.ts';
 import type { ProcessChargeJobData } from '../jobs/ixcsoftProcessChargeJob.ts';
 import { verifyWooviWebhookSignature } from '../woovi/verifyWooviWebhookSignature.ts';
 import logger from '../common/logger.ts';
+import type { HandlerResult } from '../application/registerApplicationHandler.ts';
 
 type WebhookBody = Partial<Omit<ProcessChargeJobData, 'applicationId'>> & {
   evento?: string;
 };
 
-export const chargeCompletedHandler = async (ctx: Context): Promise<void> => {
-  const { applicationId } = ctx.params as { applicationId: string };
-  const signature = ctx.get('x-webhook-signature');
-  const rawBody = (ctx.request as unknown as { rawBody?: string }).rawBody ?? '';
+type ProcessChargeWebhookInput = {
+  applicationId: string;
+  signature: string | undefined;
+  rawBody: string;
+};
+
+export const processChargeWebhook = async (
+  input: ProcessChargeWebhookInput,
+): Promise<HandlerResult> => {
+  const { applicationId, signature, rawBody } = input;
 
   const valid = verifyWooviWebhookSignature({
     rawBody,
@@ -22,40 +27,35 @@ export const chargeCompletedHandler = async (ctx: Context): Promise<void> => {
 
   if (!valid) {
     logger.warn({ applicationId }, 'charge completed: invalid signature');
-    ctx.status = 401;
-    ctx.body = { error: 'invalid signature' };
-    return;
+    return { status: 401, body: { error: 'invalid signature' } };
   }
 
-  const body = (ctx.request.body ?? {}) as WebhookBody;
+  let body: WebhookBody;
+  try {
+    body = (rawBody ? JSON.parse(rawBody) : {}) as WebhookBody;
+  } catch {
+    return { status: 400, body: { error: 'invalid json body' } };
+  }
 
   // Woovi sends a signed test ping when registering the webhook.
   // Must return 200 so the webhook gets registered.
   if (body.evento === 'teste_webhook') {
     logger.info({ applicationId }, 'charge completed: received woovi test ping');
-    ctx.status = 200;
-    ctx.body = { ok: true };
-    return;
+    return { status: 200, body: { ok: true } };
   }
 
   if (!applicationId) {
-    ctx.status = 400;
-    ctx.body = { error: 'missing applicationId' };
-    return;
+    return { status: 400, body: { error: 'missing applicationId' } };
   }
 
   const { correlationID, value, paidAt } = body;
 
   if (!correlationID) {
-    ctx.status = 400;
-    ctx.body = { error: 'missing correlationID' };
-    return;
+    return { status: 400, body: { error: 'missing correlationID' } };
   }
 
   if (typeof value !== 'number') {
-    ctx.status = 400;
-    ctx.body = { error: 'missing value' };
-    return;
+    return { status: 400, body: { error: 'missing value' } };
   }
 
   await ixcsoftQueue.add(
@@ -66,6 +66,5 @@ export const chargeCompletedHandler = async (ctx: Context): Promise<void> => {
 
   logger.info({ applicationId, correlationID }, 'charge completed: job enqueued');
 
-  ctx.status = 200;
-  ctx.body = { ok: true };
+  return { status: 200, body: { ok: true } };
 };

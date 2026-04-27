@@ -325,11 +325,26 @@ Per-tenant IXC credentials (`baseUrl`, `token`) and `wooviAppId` are sent on the
 
 ---
 
+## Development
+
+```bash
+pnpm install
+pnpm dev          # next dev — auto-loads .env, runs instrumentation.ts on boot
+pnpm build        # next build (output: standalone)
+pnpm start        # next start
+pnpm test         # vitest run
+pnpm typecheck    # tsc --noEmit
+```
+
+`instrumentation.ts` is the Next.js boot hook: it connects Mongo, starts the BullMQ workers, and registers the cron. Route handlers live under `src/app/service-ixcsoft/v1/`.
+
+---
+
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                       service-ixcsoft (Koa)                       │
+│                     service-ixcsoft (Next.js)                     │
 │                                                                    │
 │  POST /applications ──► registers tenant, creates Woovi webhook   │
 │  POST /webhooks/charges/completed/:id ──► signature-checked       │

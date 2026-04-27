@@ -3,7 +3,7 @@ set -x
 COMMIT_SHA=$(git rev-parse HEAD)
 BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-rm -rf build
+rm -rf .next
 pnpm build
 docker build --platform=linux/amd64 -t registry.dev1.woovi.corp:8010/woovi/service-woovi-ixcsoft \
   -f Dockerfile . \

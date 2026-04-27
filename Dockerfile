@@ -1,16 +1,11 @@
 FROM registry.dev1.woovi.corp:8010/woovi/node:24-alpine
 
-RUN npm i -g corepack@latest && corepack enable pnpm && corepack install -g pnpm@latest-10
-
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY ./docker/woovi-ixcsoft/package.json /usr/src/app/
-COPY ./docker/woovi-ixcsoft/pnpm-lock.yaml /usr/src/app/
-COPY ./docker/woovi-ixcsoft/.npmrc /usr/src/app/
-
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
@@ -20,10 +15,13 @@ ENV BUILD_TIMESTAMP=$BUILD_TIMESTAMP
 
 EXPOSE ${PORT}
 
-RUN pnpm install --prod --frozen-lockfile
-
-COPY ./build /usr/src/app/
+COPY ./.next/standalone/ /usr/src/app/
+# Next.js 16 standalone tracing misses instrumentation.js + its server chunks.
+# Copy the full .next/server/ so register() runs on boot (DB, workers, cron).
+COPY ./.next/server/ /usr/src/app/.next/server/
+COPY ./.next/static/ /usr/src/app/.next/static/
+COPY ./public/ /usr/src/app/public/
 
 ENV NODE_OPTIONS="--enable-source-maps --trace-warnings"
 
-CMD ["node", "service-ixcsoft.js"]
+CMD ["node", "server.js"]

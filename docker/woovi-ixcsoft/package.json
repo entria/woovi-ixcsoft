@@ -1,9 +1,0 @@
-{
-  "name": "woovi-ixcsoft-docker",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "@koa/router": "^14.0.0",
-    "elastic-apm-node": "^4.13.0"
-  }
-}
