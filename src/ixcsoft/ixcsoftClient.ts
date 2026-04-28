@@ -12,13 +12,14 @@ type IxcsoftRequestOptions = {
 };
 
 export class IxcsoftRequestError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly body: string,
-    detail: string,
-  ) {
+  readonly status: number;
+  readonly body: string;
+
+  constructor(status: number, body: string, detail: string) {
     super(`IXC Soft request failed: ${detail}`);
     this.name = 'IxcsoftRequestError';
+    this.status = status;
+    this.body = body;
   }
 }
 

@@ -11,9 +11,14 @@ type WooviRequestOptions = {
 };
 
 export class WooviRequestError extends Error {
-  constructor(public readonly status: number, public readonly body: string) {
+  readonly status: number;
+  readonly body: string;
+
+  constructor(status: number, body: string) {
     super(`Woovi request failed: ${status}`);
     this.name = 'WooviRequestError';
+    this.status = status;
+    this.body = body;
   }
 }
 
