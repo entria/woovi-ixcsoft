@@ -8,7 +8,6 @@ const MAX_INVOICES = 2000;
 
 type ListInvoicesByPeriodOptions = {
   start: Date;
-  end: Date;
   credentials: IxcsoftConfig;
 };
 
@@ -16,18 +15,21 @@ const formatIxcDate = (date: Date): string => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  return `${dd}/${mm}/${yyyy}`;
 };
 
 /**
- * Lists ALL `fn_areceber` rows within a period, regardless of status or pix_txid.
+ * Lists `fn_areceber` rows with `data_emissao >= start` (no upper bound).
  * Used by the reconciliation screen — distinct from `ixcsoftListOpenInvoices`,
  * which is the cron's filter (only open invoices without a Woovi charge yet).
+ *
+ * Note: `BE` on date columns is broken in IXC — it matches rows with
+ * `0000-00-00` regardless of the range. Use `>=` instead.
  */
 export const ixcsoftListInvoicesByPeriod = async (
   options: ListInvoicesByPeriodOptions,
 ): Promise<IxcsoftInvoice[]> => {
-  const { start, end, credentials } = options;
+  const { start, credentials } = options;
 
   const all: IxcsoftInvoice[] = [];
   let page = 1;
@@ -38,12 +40,12 @@ export const ixcsoftListInvoicesByPeriod = async (
       path: '/fn_areceber',
       credentials,
       body: {
-        qtype: 'fn_areceber.data_vencimento',
-        query: `${formatIxcDate(start)},${formatIxcDate(end)}`,
-        oper: 'BE',
+        qtype: 'fn_areceber.data_emissao',
+        query: formatIxcDate(start),
+        oper: '>=',
         page: String(page),
         rp: String(PAGE_SIZE),
-        sortname: 'fn_areceber.data_vencimento',
+        sortname: 'fn_areceber.data_emissao',
         sortorder: 'desc',
       },
     });
@@ -55,7 +57,7 @@ export const ixcsoftListInvoicesByPeriod = async (
     page++;
   }
 
-  logger.info({ fetched: all.length, start, end }, 'ixcsoft invoices listed by period');
+  logger.info({ fetched: all.length, start }, 'ixcsoft invoices listed by period');
 
   return all.slice(0, MAX_INVOICES);
 };

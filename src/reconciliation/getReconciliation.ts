@@ -74,7 +74,7 @@ export const getReconciliation = async (input: {
   const start = new Date(end.getTime() - RANGE_DAYS * 24 * 60 * 60 * 1000);
 
   const [invoices, charges] = await Promise.all([
-    ixcsoftListInvoicesByPeriod({ start, end, credentials: application.ixcsoft }),
+    ixcsoftListInvoicesByPeriod({ start, credentials: application.ixcsoft }),
     wooviListCharges({ appId: application.wooviAppId, start, end }),
   ]);
 
