@@ -61,8 +61,9 @@ export const ixcsoftRequest = async <T>(options: IxcsoftRequestOptions): Promise
     throw new IxcsoftRequestError(response.statusCode, text, `HTTP ${response.statusCode}`);
   }
 
+  let parsed: unknown;
   try {
-    return JSON.parse(text) as T;
+    parsed = JSON.parse(text);
   } catch {
     if (looksLikeHtml(text)) {
       const message = extractHtmlMessage(text).slice(0, 300) || 'unknown HTML error';
@@ -72,4 +73,16 @@ export const ixcsoftRequest = async <T>(options: IxcsoftRequestOptions): Promise
     logger.error({ path, body: text.slice(0, 500) }, 'ixcsoft response was not JSON');
     throw new IxcsoftRequestError(response.statusCode, text, 'response was not JSON');
   }
+
+  // IXC may return HTTP 200 with `{ type: 'error', message: '...' }` for
+  // business-rule failures (e.g. blocked vencimento date). Treat as error.
+  if (
+    parsed && typeof parsed === 'object' && 'type' in parsed && (parsed as { type: unknown }).type === 'error'
+  ) {
+    const message = extractHtmlMessage(String((parsed as { message?: unknown }).message ?? '')).slice(0, 300) || 'unknown IXC error';
+    logger.error({ path, message }, 'ixcsoft returned type=error');
+    throw new IxcsoftRequestError(response.statusCode, text, message);
+  }
+
+  return parsed as T;
 };
