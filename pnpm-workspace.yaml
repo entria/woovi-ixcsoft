@@ -1,0 +1,17 @@
+
+# --- Supply-chain hardening (Tier 1) ---
+# Defense-in-depth against npm worm waves (Shai-Hulud, chalk/debug, nx).
+# Complements Verdaccio's 3-day cooldown filter at verdaccio.woovi.dev.
+# See deployments/verdaccio/values.yaml in entria/woovi-k8s-dev for the registry side.
+minimumReleaseAge: 4320            # 3 days in minutes — never adopt brand-new releases
+minimumReleaseAgeExclude:
+  - '@woovi-private/*'             # internal packages publish-and-go
+  - '@woovi/*'
+blockExoticSubdeps: true           # blocks git+ssh transitive deps (CVE-2025-69264)
+trustPolicy: no-downgrade          # catches maintainer-account compromise (pnpm 10.21+)
+verifyDepsBeforeRun: error         # refuses pnpm run if node_modules was tampered (pnpm 10.20+)
+strictDepBuilds: false
+# strictDepBuilds is OFF here because onlyBuiltDependencies is empty.
+# To enable: run `pnpm install`, add legitimate post-install scripts to
+# the onlyBuiltDependencies list in package.json, then flip to true.
+
