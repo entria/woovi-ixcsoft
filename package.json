@@ -26,7 +26,7 @@
     "@mui/material-nextjs": "^7.3.9",
     "@sentry/node": "^10.5.0",
     "@woovi/apiwithlog": "^2.8.0",
-    "@woovi/logger": "^1.0.1",
+    "@woovi/logger": "^2.0.2",
     "bullmq": "^5.57.0",
     "elastic-apm-node": "^4.13.0",
     "ioredis": "^5.7.0",
