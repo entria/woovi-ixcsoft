@@ -24,7 +24,7 @@
     "@fontsource/roboto": "^5.2.10",
     "@mui/material": "^7.3.9",
     "@mui/material-nextjs": "^7.3.9",
-    "@sentry/node": "^10.63.0",
+    "@sentry/node": "^10.65.0",
     "@woovi/apiwithlog": "^2.8.0",
     "@woovi/logger": "^1.0.1",
     "bullmq": "^5.80.2",
