@@ -9,9 +9,29 @@ minimumReleaseAgeExclude:
   - '@woovi/*'
 blockExoticSubdeps: true           # blocks git+ssh transitive deps (CVE-2025-69264)
 trustPolicy: no-downgrade          # catches maintainer-account compromise (pnpm 10.21+)
+trustPolicyExclude:
+  # Versão pinada é anterior à adoção de provenance pelo mantenedor: a atual tem
+  # attestation, a pinada não, e o no-downgrade lê a diferença como possível
+  # takeover. Exceção escopada por pacote; a política segue valendo.
+  - 'undici-types'
+
+# --- pnpm 12 ---
+# O no-downgrade da 12 barra dependência PINADA ABAIXO da versão em que o mantenedor
+# passou a publicar com provenance. Nenhuma das abaixo é sinal de comprometimento.
+  # Versão pinada é anterior à adoção de provenance pelo mantenedor: a atual tem
+  # attestation, a pinada não, e o no-downgrade lê a diferença como possível
+  # takeover. Exceção escopada por pacote; a política segue valendo.
+  - 'pino'
 verifyDepsBeforeRun: error         # refuses pnpm run if node_modules was tampered (pnpm 10.20+)
 strictDepBuilds: false
 # strictDepBuilds is OFF here because onlyBuiltDependencies is empty.
 # To enable: run `pnpm install`, add legitimate post-install scripts to
 # the onlyBuiltDependencies list in package.json, then flip to true.
 
+# Os `false` são decisão EXPLÍCITA: no pnpm 10 nenhum destes build scripts rodava,
+# e `false` mantém exatamente isso. Sem responder, a 12 REESCREVE este arquivo a
+# cada install (`<pacote>: set this to true or false`) e suja o working tree.
+allowBuilds:
+  esbuild: false
+  msgpackr-extract: false
+  sharp: false
