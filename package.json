@@ -1,4 +1,6 @@
 {
+  "engines": { "pnpm": ">=12" },
+  "packageManager": "pnpm@12.4.1",
   "name": "service-ixcsoft",
   "description": "IXC Soft + Woovi PIX integration microservice",
   "version": "0.1.0",
