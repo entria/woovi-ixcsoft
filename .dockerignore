@@ -1,0 +1,25 @@
+node_modules
+.git
+*.log
+.env
+.env.local
+
+# --- caches do pipeline Tekton (woovi-k8s-dev) ---
+# Com `cache: false` (111 dos 114 charts), o task-install-dep define
+# EFFECTIVE_CACHE_DIR = workspaces.source — que é o proprio contexto de build.
+# Estes diretorios sao criados DENTRO do contexto pelo pipeline, nao pelo repo.
+# Sem exclui-los um `COPY . .` morre com `archive/tar: write too long`: os
+# arquivos do store content-addressable do pnpm sao hardlinks que mudam de
+# tamanho enquanto o tar os le. Local nunca reproduz porque o pnpm usa um store
+# global (~/.local/share/pnpm/store), fora do repositorio.
+.pnpm-store
+.corepack
+.turbo
+.cache
+.gocache
+.gomodcache
+
+# artefatos de teste gerados no workspace pelo pipeline, nunca usados na imagem
+coverage
+playwright-report
+test-results
