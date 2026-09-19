@@ -1,4 +1,10 @@
 
+# Dedupe ioredis to a single copy: bullmq pins 5.10.1 while the app uses
+# 5.11.1, so passing our Redis instance as a bullmq `connection` fails
+# typecheck (two nominally distinct Redis types). Force one version.
+overrides:
+  ioredis: ^5.11.1
+
 # --- Supply-chain hardening (Tier 1) ---
 # Defense-in-depth against npm worm waves (Shai-Hulud, chalk/debug, nx).
 # Complements Verdaccio's 3-day cooldown filter at verdaccio.woovi.dev.
