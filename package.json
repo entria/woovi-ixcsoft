@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "tsgo": "tsgo",
+    "typecheck": "tsgo --noEmit",
     "docker:build:local": "bash docker/build-local.sh",
     "docker:build:staging": "bash docker/build-docker-staging.sh",
     "docker:build:production": "bash docker/build-docker-production.sh",
@@ -45,6 +46,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "typescript": "^5.7.0",
     "vitest": "^3.2.4"
   }
