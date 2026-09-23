@@ -41,3 +41,6 @@ allowBuilds:
   esbuild: false
   msgpackr-extract: false
   sharp: false
+
+# Consolidate compatible duplicate versions across the lockfile (pnpm 12.6+)
+autoDedupe: true
