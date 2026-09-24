@@ -50,6 +50,6 @@
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "husky": "^9.1.7",
     "typescript": "^5.7.0",
-    "vitest": "^3.2.4"
+    "vitest": "^5.0.1"
   }
 }
