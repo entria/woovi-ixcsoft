@@ -33,7 +33,7 @@
     "@woovi/logger": "^1.0.1",
     "bullmq": "^5.80.2",
     "elastic-apm-node": "^4.13.0",
-    "ioredis": "^5.11.1",
+    "ioredis": "^6.0.0",
     "mongoose": "^9.7.4",
     "next": "16.2.10",
     "pino": "^9.9.0",
