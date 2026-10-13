@@ -15,11 +15,12 @@
     "tsgo": "tsgo",
     "typecheck": "tsgo --noEmit",
     "docker:build:local": "bash docker/build-local.sh",
-    "docker:build:staging": "bash docker/build-docker-staging.sh",
-    "docker:build:production": "bash docker/build-docker-production.sh",
-    "docker:build:k8s": "bash docker/build-docker-k8s.sh",
     "docker:run": "bash docker/run.sh",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:staging": "woovi-docker staging",
+    "docker:staging:tekton": "woovi-docker staging --tekton --watch",
+    "docker:production": "woovi-docker production",
+    "docker:status": "woovi-docker status"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -48,8 +49,13 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "@woovi-private/docker-build": "^0.2.0",
     "husky": "^9.1.7",
     "typescript": "^5.7.0",
     "vitest": "^3.2.4"
+  },
+  "wooviDocker": {
+    "image": "woovi/service-woovi-ixcsoft",
+    "prebuild": "rm -rf .next && pnpm build"
   }
 }

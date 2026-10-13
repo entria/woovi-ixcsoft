@@ -242,6 +242,9 @@ importers:
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20260707.2
         version: 7.0.0-dev.20260707.2
+      '@woovi-private/docker-build':
+        specifier: ^0.2.0
+        version: 0.2.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -1575,6 +1578,11 @@ packages:
 
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
+
+  '@woovi-private/docker-build@0.2.0':
+    resolution: {integrity: sha512-dTITGBNUmyx4yT70Orn4b5XUTpR0WRy2QT3XzhzdJGx6ALgEVdOMHSI+1TI6pS60MYcihB1iIKnat0Dd2J46lQ==, tarball: https://verdaccio.woovi.dev/@woovi-private/docker-build/-/docker-build-0.2.0.tgz}
+    engines: {node: '>=22'}
+    hasBin: true
 
   '@woovi/apiwithlog@2.8.0':
     resolution: {integrity: sha512-rBv9QsdeOW/1QquVOyamYsAhiluKwOK+8Fj62fyUqQNGpxKeAg1nvGcF7eAu2zSvdhVF3ruEuzSz7t1i9xVbtA==}
@@ -3756,6 +3764,8 @@ snapshots:
       '@vitest/pretty-format': 3.2.4
       loupe: 3.2.1
       tinyrainbow: 2.0.0
+
+  '@woovi-private/docker-build@0.2.0': {}
 
   '@woovi/apiwithlog@2.8.0(@types/node@22.19.17)(supports-color@7.2.0)':
     dependencies:
