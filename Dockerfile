@@ -1,4 +1,4 @@
-FROM registry.dev1.woovi.corp:8010/woovi/node:24-alpine
+FROM registry.dev1.woovi.corp:8010/woovi/node:26-alpine
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
